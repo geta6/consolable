@@ -86,7 +86,7 @@
 ## Example
 
 ```js
-var consolable = require('consorable');
+var consolable = require('consolable');
 
 consolable.level(2);
 
