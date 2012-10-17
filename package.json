@@ -1,0 +1,21 @@
+{
+  "name": "consolable",
+  "description": "get controls and colors in your console",
+  "version": "0.1.1",
+  "author": {
+    "name": "geta6"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/geta6/consolable.git"
+  },
+  "main": "consolable",
+  "keywords": [
+    "console",
+    "log"
+  ],
+  "dependencies": {
+    "hooker": "0.2.3"
+  },
+  "license": "MIT"
+}
