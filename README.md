@@ -19,11 +19,6 @@
     require('consolable');
 
 
-## How to Use
-
-    require('consorable');
-
-
 ## Methods
 
     var consolable = require('consolable');
