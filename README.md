@@ -77,12 +77,6 @@
   `blue`, `cyan`, `green`, `magenta`, `red`, `yellow`
 
 
-## Features
-
-  * control show/hide logs by `loglevel` option.
-  * append colorized tag for message.
-
-
 ## Example
 
 ```js
