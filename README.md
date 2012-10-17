@@ -41,7 +41,7 @@
     * `error : red`
     * `warn  : yellow`
     * `info  : grey`
-    * `warn  : cyan`
+    * `log   : cyan`
 
 ### Level Format
 

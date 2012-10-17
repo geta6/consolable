@@ -1,7 +1,7 @@
 {
   "name": "consolable",
   "description": "get loglevel controls and colors in your console",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "author": {
     "name": "geta6"
   },
