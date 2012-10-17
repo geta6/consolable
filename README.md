@@ -12,11 +12,11 @@
 
   Start coding:
 
-    `$ npm install consolable`
+    $ npm install consolable
 
   Include in your project
 
-    `require('consolable');`
+    require('consolable');
 
 
 ## How to Use
