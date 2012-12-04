@@ -1,7 +1,7 @@
 {
   "name": "consolable",
-  "description": "get loglevel controls and colors in your console",
-  "version": "0.1.6",
+  "description": "get controls and colors in your nodejs native console",
+  "version": "1.0.0",
   "author": {
     "name": "geta6"
   },
@@ -10,10 +10,7 @@
     "url": "https://github.com/geta6/consolable.git"
   },
   "main": "consolable",
-  "keywords": [
-    "console",
-    "log"
-  ],
+  "keywords": [ "console", "log" ],
   "dependencies": {
     "hooker": "0.2.3"
   },
