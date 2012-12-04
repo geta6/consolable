@@ -1,7 +1,8 @@
 ![consolable](https://dl-web.dropbox.com/get/Public/consolable.jpg?w=284686b0)
 
-  consolable - get controls and colors in your [nodejs](http://nodejs.org) native console
+  consolable - get controls and colors in your [nodejs](http://nodejs.org) native console.
 
+  you have good command of `console.error`, `warn`, `info`, `log`.
 
 ## Requirement
 
@@ -19,61 +20,94 @@
     require('consolable');
 
 
+## Features
+
+  * Discarding lower level of log.
+  * Visualize log by color, tag and time.
+  * Output logs to file.
+
 ## Methods
 
     var consolable = require('consolable');
 
-### setLogLevel(level = 4)
+### setLogLevel(level = 4, [sync = no])
 
-  * Change your Log Level 0~4, default is 4.
-    * `level` is [specific word](#Level Format Word Lists) or number.
-  * Level...
-    * 0, ignore all log
-    * 1, only `console.error`
-    * 2, `console.error` and `console.warn`
-    * 3, `console.error` and `console.warn` and `console.info`
-    * 4, all log includes `console.log`
+  * Set stdout log level, default 4.
+    * `level` is [specific string](#Level Format Word Lists) or number.
+    * `sync` is true, sync file log level with log level.
+  * Lower level of logs will be discarded.
+    * `level 0`: No logs output.
+    * `level 1`: `error`.
+    * `level 2`: `error`, `warn`.
+    * `level 3`: `error`, `warn`, `info`.
+    * `level 4`: `error`, `warn`, `info`, `log`.
 
 ```coffee
-consolable.setLogLevel 'production' # Set Lv.1, OK
-consolable.setLogLevel 4            # Set Lv.4, OK
-consolable.setLogLevel '2'          # Set Lv.2, OK
-consolable.setLogLevel 'info'       # Set Lv.3, OK
-consolable.setLogLevel 'hoge'       # Set Lv.4, Undefined word
+consolable.setLogLevel 3            # Set Lv.3
+consolable.setLogLevel '2'          # Set Lv.2
+consolable.setLogLevel 'production' # Set Lv.1
+consolable.setLogLevel 'hoge'       # Set Lv.4, undefined word
+consolable.setLogLevel 4, yes       # Set Lv.4, set FLv.4
 ```
 
-### setAppendTag(append = true)
+### setFIleLogLevel(level = 4)
 
-  * Append tag prefix or not, default is true.
+  * Set file log level, default 4.
+  * Lower level of logs will be discarded.
+
+### setFilePath(path)
+
+  * Output logs to file, default null.
+  * If path is already exists, append log.
 
 ```coffee
-consolable.setAppendTag yes
-console.log '（｀ェ´）ﾋﾟｬｰ'  # [log] （｀ェ´）ﾋﾟｬｰ
+consolable.setFilePath './log.txt'
+consolable.setFilePath null         # Stop
+```
+
+### setAppendTime([append = true])
+
+  * Append UnixTime to log prefix, default false.
+
+```coffee
+consolable.setAppendTime()
+console.log 'hoge'           # [1354605544707 log] hoge
 
 consolable.setAppendTag no
-console.log '（｀ェ´）ﾋﾟｬｰ'  # （｀ェ´）ﾋﾟｬｰ
+console.log 'hoge'           # [1354605544707] hoge
+
+consolable.setAppendTime no
+console.log 'hoge'           # hoge
+
 ```
 
-### setColorize(colorize = false)
+### setAppendTag([append = true])
 
-  * Colorize log body text or not, default is false.
+  * Append LogLevel to log prefix, default true.
 
 ```coffee
-consolable.setColorize no
-                          #       __________ white
-console.log 'colorize..'  # [log] colorize..
-                          # ‾‾‾‾‾ cyan
+consolable.setAppendTag()
+console.log 'hoge'           # [log] hoge
 
-consolable.setColorize yes
-                          #       __________ cyan
-console.log 'colorize..'  # [log] colorize..
-                          # ‾‾‾‾‾ cyan
+consolable.setAppendTag no
+console.log 'hoge'           # hoge
+```
+
+### setColorize([colorize = true])
+
+  * Colorize body text, default false.
+
+```coffee
+consolable.setColorize()
+console.log 'colorize..'     # <color=cyan>[log] colorize..</color>
+
+consolable.setColorize no
+console.log 'colorize..'     # <color=cyan>[log]</color> colorize..
 ```
 
 ### setLevelColor(level, color)
 
-  * Change log color.
-  * Defaults...
+  * Change log color, defaults...
     * `error` `red`
     * `warn` `yellow`
     * `info` `grey`

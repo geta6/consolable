@@ -25,13 +25,18 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-var color4console, colors, consolable, hooker, level2number, params, util;
+var color4console, colors, fs, hooker, level2number, params, sendprefix, util;
+
+fs = require('fs');
 
 util = require('util');
 
 hooker = require('hooker');
 
 params = {
+  filepath: null,
+  appendtime: false,
+  fileloglevel: 4,
   loglevel: 4,
   appendtag: true,
   colorize: false,
@@ -100,45 +105,75 @@ color4console = function(level) {
   }
 };
 
+sendprefix = function(level) {
+  var tag, time;
+  tag = params.appendtag ? level : false;
+  time = params.appendtime ? Date.now() : false;
+  if (tag && time) {
+    return "[" + time + " " + tag + "] ";
+  }
+  if (tag && !time) {
+    return "[" + tag + "] ";
+  }
+  if (!tag && time) {
+    return "[" + time + "] ";
+  }
+  if (!tag && !time) {
+    return "";
+  }
+};
+
 module.exports = {
-  setParams: function(options) {
-    if (typeof param === 'object') {
-      if (options.loglevel != null) {
-        this.setLogLevel(options.loglevel);
-      }
-      if (options.appendtag != null) {
-        this.setAppendTag(options.appendtag);
-      }
-      if (options.colorize != null) {
-        this.setColorize(options.colorize);
-      }
-      if (typeof options.colors === 'object') {
-        if (options.colors[1] != null) {
-          this.setLevelColor(1, options.colors[1]);
-        }
-        if (options.colors[2] != null) {
-          this.setLevelColor(2, options.colors[2]);
-        }
-        if (options.colors[3] != null) {
-          this.setLevelColor(3, options.colors[3]);
-        }
-        if (options.colors[4] != null) {
-          return this.setLevelColor(4, options.colors[4]);
-        }
-      }
+  setLogLevel: function(level, filesync) {
+    if (level == null) {
+      level = 4;
+    }
+    if (filesync == null) {
+      filesync = false;
+    }
+    if (level != null) {
+      params.loglevel = level2number(level);
+    }
+    if (typeof filesync === 'boolean' && filesync === true) {
+      return this.setFileLogLevel(level2number(level));
     }
   },
-  setLogLevel: function(level) {
+  setFileLogLevel: function(level) {
+    if (level == null) {
+      level = 4;
+    }
     if (level != null) {
-      return params.loglevel = level2number(level);
+      return params.fileloglevel = level2number(level);
+    }
+  },
+  setFilePath: function(filepath) {
+    if (typeof filepath === 'string') {
+      if (!fs.existsSync(filepath)) {
+        fs.writeFileSync(filepath, '');
+      }
+      return params.filepath = filepath;
+    }
+  },
+  setAppendTime: function(appendtime) {
+    if (appendtime == null) {
+      appendtime = true;
+    }
+    if (typeof appendtime === 'boolean') {
+      return params.appendtime = appendtime;
     }
   },
   setAppendTag: function(append) {
+    if (append == null) {
+      append = true;
+    }
     if (typeof append === 'boolean') {
       return params.appendtag = append;
     }
   },
   setColorize: function(colorize) {
+    if (colorize == null) {
+      colorize = true;
+    }
     if (typeof colorize === 'boolean') {
       return params.colorize = colorize;
     }
@@ -153,36 +188,31 @@ module.exports = {
   }
 };
 
-consolable = function(level) {
-  return hooker.hook(console, level, {
-    pre: function() {
-      var color;
-      if (params.loglevel >= level2number(level)) {
-        if (params.appendtag) {
-          color = color4console(level);
-          util.print("" + color[0] + "[" + level + "]" + color[1] + " ");
-        }
-        if (params.colorized) {
-          return util.print("" + color[0]);
-        }
-      } else {
-        return hooker.preempt();
-      }
-    },
-    post: function() {
-      var color;
-      if (params.colorized) {
-        color = color4console(level);
-        return util.print("" + color[1]);
+hooker.hook(console, ['log', 'info', 'warn', 'error'], {
+  passName: true,
+  pre: function(level, log) {
+    var color;
+    if (params.fileloglevel >= level2number(level)) {
+      if (params.filepath !== null) {
+        fs.appendFileSync(params.filepath, "" + (sendprefix(level)) + log + "\n");
       }
     }
-  });
-};
-
-consolable('log');
-
-consolable('info');
-
-consolable('warn');
-
-consolable('error');
+    if (params.loglevel >= level2number(level)) {
+      color = color4console(level);
+      if (params.colorize) {
+        return util.print("" + color[0] + (sendprefix(level)));
+      } else {
+        return util.print("" + color[0] + (sendprefix(level)) + color[1]);
+      }
+    } else {
+      return hooker.preempt();
+    }
+  },
+  post: function(res, name) {
+    var color;
+    if (params.colorized) {
+      color = color4console(level);
+      return util.print("" + color[1]);
+    }
+  }
+});

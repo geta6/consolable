@@ -26,10 +26,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 # private
 
+fs = require 'fs'
 util = require 'util'
 hooker = require 'hooker'
 
 params =
+  filepath: null
+  appendtime: no
+  fileloglevel: 4
   loglevel: 4
   appendtag: yes
   colorize: no
@@ -87,29 +91,47 @@ color4console = (level) ->
   else
     return colors.white
 
+sendprefix = (level) ->
+  tag = if params.appendtag then level else no
+  time = if params.appendtime then Date.now() else no
+  if tag and time
+    return "[#{time} #{tag}] "
+  if tag and !time
+    return "[#{tag}] "
+  if !tag and time
+    return "[#{time}] "
+  if !tag and !time
+    return ""
+
+
 # public
 
 module.exports =
-  setParams: (options) ->
-    if typeof param is 'object'
-      @setLogLevel options.loglevel if options.loglevel?
-      @setAppendTag options.appendtag if options.appendtag?
-      @setColorize options.colorize if options.colorize?
-      if typeof options.colors is 'object'
-        @setLevelColor 1, options.colors[1] if options.colors[1]?
-        @setLevelColor 2, options.colors[2] if options.colors[2]?
-        @setLevelColor 3, options.colors[3] if options.colors[3]?
-        @setLevelColor 4, options.colors[4] if options.colors[4]?
-
-  setLogLevel: (level) ->
+  setLogLevel: (level = 4, filesync = no) ->
     if level?
-      return params.loglevel = level2number level
+      params.loglevel = level2number level
+    if typeof filesync is 'boolean' and filesync is yes
+      @setFileLogLevel level2number level
 
-  setAppendTag: (append) ->
+  setFileLogLevel: (level = 4) ->
+    if level?
+      return params.fileloglevel = level2number level
+
+  setFilePath: (filepath) ->
+    if typeof filepath is 'string'
+      unless fs.existsSync filepath
+        fs.writeFileSync filepath, ''
+      params.filepath = filepath
+
+  setAppendTime: (appendtime = yes) ->
+    if typeof appendtime is 'boolean'
+      params.appendtime = appendtime
+
+  setAppendTag: (append = yes) ->
     if typeof append is 'boolean'
       params.appendtag = append
 
-  setColorize: (colorize) ->
+  setColorize: (colorize = yes) ->
     if typeof colorize is 'boolean'
       params.colorize = colorize
 
@@ -119,23 +141,22 @@ module.exports =
       if colors[color]?
         params.colors[level] = color
 
-consolable = (level) ->
-  hooker.hook console, level,
-    pre: ->
-      if params.loglevel >= level2number level
-        if params.appendtag
-          color = color4console level
-          util.print "#{color[0]}[#{level}]#{color[1]} "
-        if params.colorized
-          util.print "#{color[0]}"
-      else
-        return hooker.preempt()
-    post: ->
-      if params.colorized
-        color = color4console level
-        util.print "#{color[1]}"
 
-consolable 'log'
-consolable 'info'
-consolable 'warn'
-consolable 'error'
+hooker.hook console, ['log', 'info', 'warn', 'error'],
+  passName: yes
+  pre: (level, log)->
+    if params.fileloglevel >= level2number level
+      if params.filepath isnt null
+        fs.appendFileSync params.filepath, "#{sendprefix level}#{log}\n"
+    if params.loglevel >= level2number level
+      color = color4console level
+      if params.colorize
+        util.print "#{color[0]}#{sendprefix level}"
+      else
+        util.print "#{color[0]}#{sendprefix level}#{color[1]}"
+    else
+      return hooker.preempt()
+  post: (res, name) ->
+    if params.colorized
+      color = color4console level
+      util.print "#{color[1]}"

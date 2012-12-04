@@ -1,7 +1,7 @@
 {
   "name": "consolable",
   "description": "get controls and colors in your nodejs native console",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": {
     "name": "geta6"
   },
